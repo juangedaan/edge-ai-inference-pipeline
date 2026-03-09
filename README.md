@@ -1,6 +1,6 @@
 # Edge AI Inference Pipeline
 
-A minimal edge inference pipeline: a script takes text and prints a mock prediction.
+An edge inference demo: trains a tiny text classifier and runs predictions with scikit-learn.
 
 ```mermaid
 flowchart LR
@@ -14,7 +14,8 @@ flowchart LR
 edge-ai-inference-pipeline/
 ├── README.md
 ├── requirements.txt
-└── infer.py
+├── infer.py (old stub)
+└── predict.py  # new training/inference script
 ```
 
 ## 🚀 Usage
