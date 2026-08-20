@@ -12,7 +12,6 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 import joblib
-import pickle
 from typing import List, Dict, Any
 from dataclasses import dataclass
 
@@ -45,7 +44,7 @@ class EdgeAIPipeline:
             "bad experience total disappointment",
             "worst purchase ever"
         ] * 10  # Multiply for more data
-        labels = [1] * 50 + [0] * 50
+        labels = ([1] * 5 + [0] * 5) * 10  # match repeated text order
         return texts, labels
 
     def preprocess_text(self, texts: List[str]) -> np.ndarray:
@@ -95,12 +94,13 @@ class EdgeAIPipeline:
         print("💾 Saving models for edge deployment...")
         for name, config in self.models.items():
             joblib.dump(config, f"{name}_model.joblib")
+        joblib.dump(self.best_model, "best_model.joblib")
         print("Models saved.")
 
     def load_model(self, model_name: str = None):
         """Load model for inference"""
         if model_name is None:
-            model_name = self.best_model.name if self.best_model else 'logistic_regression'
+            model_name = self.best_model.name if self.best_model else 'best'
         try:
             config = joblib.load(f"{model_name}_model.joblib")
             return config
@@ -115,8 +115,8 @@ class EdgeAIPipeline:
         if not config:
             return {"error": "Model not loaded"}
 
-        # Preprocess input
-        processed = self.vectorizer.transform([text.lower().strip()])
+        # Preprocess input with the fitted vectorizer saved alongside the model
+        processed = config.vectorizer.transform([text.lower().strip()])
         prediction = config.model.predict(processed)[0]
         probabilities = config.model.predict_proba(processed)[0] if hasattr(config.model, 'predict_proba') else None
 
@@ -130,7 +130,8 @@ class EdgeAIPipeline:
             "inference_time_ms": round(inference_time * 1000, 2)
         }
 
-        print(f"🔮 Prediction: {result['prediction']} (confidence: {result['confidence']:.3f}) in {result['inference_time_ms']}ms")
+        confidence_str = f"{result['confidence']:.3f}" if result['confidence'] is not None else "n/a"
+        print(f"🔮 Prediction: {result['prediction']} (confidence: {confidence_str}) in {result['inference_time_ms']}ms")
         return result
 
     def evaluate_model(self, model_name: str = None):
@@ -140,7 +141,7 @@ class EdgeAIPipeline:
             return
 
         texts, labels = self.load_dataset()
-        X = self.preprocess_text(texts)
+        X = config.vectorizer.transform([t.lower().strip() for t in texts])
         _, X_test, _, y_test = train_test_split(X, labels, test_size=0.2, random_state=42)
 
         predictions = config.model.predict(X_test)
