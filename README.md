@@ -3,27 +3,13 @@
 A comprehensive edge AI pipeline for text sentiment analysis. Trains multiple ML models (Logistic Regression, Random Forest, SVM), evaluates performance, and provides optimized inference with timing metrics.
 
 ```mermaid
-flowchart TD
+flowchart LR
     Data[Text Data] --> Preprocess[TF-IDF Vectorization]
-    Preprocess --> Split[Train/Test Split]
-
-    Split --> TrainLR[Train Logistic Regression]
-    Split --> TrainRF[Train Random Forest]
-    Split --> TrainSVM[Train SVM]
-
-    TrainLR --> Evaluate[Model Evaluation]
-    TrainRF --> Evaluate
-    TrainSVM --> Evaluate
-
+    Preprocess --> Train[Train LR / RF / SVM]
+    Train --> Evaluate[Model Evaluation]
     Evaluate --> SelectBest[Select Best Model]
-    SelectBest --> SaveModel[Save for Edge Deployment]
-
-    SaveModel --> Inference[Edge Inference]
-    Inference --> Predict[Real-time Prediction]
-    Predict --> Metrics[Performance Metrics]
-
-    Metrics --> Optimize[Model Optimization]
-    Optimize --> Deploy[Deploy to Edge Device]
+    SelectBest --> SaveModel[Save Models]
+    SaveModel --> Predict[Predict with Latency Metrics]
 ```
 
 ## 📂 Structure
